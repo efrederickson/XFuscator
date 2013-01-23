@@ -1,7 +1,7 @@
 require 'LuaMinify.ParseLua'
 require 'LuaMinify.FormatMini'
 
-function obfuscate(code, useLoadstring, level, mxLevel, makeFluff)
+function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComments)
     if type(useLoadstring) == 'number' then
         local tmp = level
         level = useLoadstring
@@ -12,6 +12,7 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff)
     level = level or 1
     mxLevel = mxLevel or 2
     if makeFluff == nil then makeFluff = true end
+    if randomComments == nil then randomComments = true end
     
     local concat = function(...) return table.concat({...}, "") end
     local function dumpString(x) 
@@ -166,13 +167,37 @@ ____ = { function(...) local t = { ...} return ____[8](t) end, print, game, math
     a2 = a2 .. " } \n"
     a2 = a2 .. GenerateFluff()
     a2 = a2 .. "return ____[11]((____[8](__)), ____[#____])()\n"
+    if randomComments then
+        a2 = a2:gsub("[%s]+", function() 
+            local r = "" 
+            for i = 1, math.random(0, 20) do 
+                local x = math.random(1, 100)
+                if x < 25 then
+                    r = r .. string.char(math.random(1, 9))
+                elseif x < 50 then
+                    r = r .. string.char(math.random(11,28))
+                elseif x < 75 then
+                    r = r .. string.char(math.random(32, 90))
+                elseif x < 90 then
+                    r = r .. string.char(math.random(94, 126))
+                else
+                    r = r .. string.char(math.random(128, 255))
+                end
+            end 
+            return " --[[" .. r .. "]] " 
+        end)
+    end
+    
+    a2 = a2:gsub("\r+", " ")
+    a2 = a2:gsub("\n+", " ")
+    a2 = a2:gsub("\t+", " ")
+    a2 = a2:gsub("[ ]+", " ")
     --a2 = a2 .. GenerateFluff() TODO
     if level < mxLevel then
         print(concat("OBFUSCATED AT LEVEL ", level, " OUT OF ", mxLevel, " (" .. a:len() .. " Obfuscated characters)"))
         return obfuscate(a2, level + 1, mxLevel)
     else
         print(concat("OBFUSCATED AT LEVEL ", level, " OUT OF ", mxLevel, " (", a:len(), " Obfuscated Characters) [Done]"))
-        a2 = a2:gsub("[%s]+", " ")
         return a2
     end
 end
@@ -196,6 +221,7 @@ local options = {
     useLoadstring = true,
     level = 1,
     mxLevel = 1,
+    comments = false,
 }
 
 local outfn
@@ -221,6 +247,8 @@ if arg and arg[1] then
         elseif a == "-max" then
             options.mxLevel = tonumber(arg[i + 1])
             i = i + 1
+        elseif a == "-nocomments" then
+            options.comments = false
         end
         i = i + 1
     end
@@ -230,7 +258,7 @@ else
 end
 
 local t1 = os and os.time() or tick()
-result = obfuscate(code, options.useLoadstring, options.level, options.mxLevel, options.fluff)
+result = obfuscate(code, options.useLoadstring, options.level, options.mxLevel, options.fluff, options.comments)
 local t2 = os and os.time() or tick()
 if not outfn then
     print(result)

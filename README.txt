@@ -14,14 +14,15 @@ Features:
 - Add fluff
 - precompile with loadstring
 - encode source (or binary chunk)
+- Add unrepresentable characters in comments
 TODO:
 - Add ROBLOX features to make the game crash if the script was stolen
-- Add unrepresentable characters in comments
 - Encrypt?
 
 
-NOTE: Files become much larger. A 1KB file can easily go to 5-9 KB.
-XFuscator (about 10 KB) becomes ~200 KB
+NOTE: Files become much larger. A 1KB file can easily go to 5-15 KB.
+XFuscator (about 10 KB) becomes ~700 KB. If you obfuscate with comments off (-nocomments flag), it makes
+it MUCH smaller, but still huge.
 
 Compare to:
 Capprime Lua Obfuscator (http://www.capprime.com/CapprimeLuaObfuscator/CapprimeLuaObfuscator.aspx)
