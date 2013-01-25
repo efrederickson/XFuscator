@@ -9,7 +9,7 @@ If you find a better one, tell me so I can make XFuscator better than it.
 Features:
 - Remove comments
 - Rename ALL local variables SAFELY
-- extract & encode strings
+- extract all constants
 - Remove extra whitespace
 - Add fluff
 - precompile with loadstring
