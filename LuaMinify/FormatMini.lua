@@ -24,7 +24,7 @@ function Format_Mini(ast)
 	local function joinStatementsSafe(a, b, sep)
 		if count > 150 then
 			count = 0
-			return a.."\n"..b
+			--return a.."\n"..b
 		end
 		sep = sep or ' '
 		local aa, bb = a:sub(-1,-1), b:sub(1,1)

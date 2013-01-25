@@ -13,16 +13,19 @@ Features:
 - Remove extra whitespace
 - Add fluff
 - precompile with loadstring
+- precompiled chunks have their locals made completely unrepresentable
 - encode source (or binary chunk)
 - Add unrepresentable characters in comments
+- In precompiled code, renames locals to something like <local$1>_[0-20 chars of range 0-255]
+- option to encrypt constant strings (uses XOR with random key)
 TODO:
 - Add ROBLOX features to make the game crash if the script was stolen
-- Encrypt?
+- Tamper detection (SHA256 hash?)
+- extract global variables and replace with a CONSTANT_POOL index
 
 
 NOTE: Files become much larger. A 1KB file can easily go to 5-15 KB.
-XFuscator (about 10 KB) becomes ~700 KB. If you obfuscate with comments off (-nocomments flag), it makes
-it MUCH smaller, but still huge.
+XFuscator (about 10 KB) becomes 500-700 KB. 
 
 Compare to:
 Capprime Lua Obfuscator (http://www.capprime.com/CapprimeLuaObfuscator/CapprimeLuaObfuscator.aspx)

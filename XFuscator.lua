@@ -1,13 +1,8 @@
 require 'LuaMinify.ParseLua'
 require 'LuaMinify.FormatMini'
+require 'LAT'
 
-function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComments, step2, useUglifier)
-    if type(useLoadstring) == 'number' then
-        local tmp = level
-        level = useLoadstring
-        mxLevel = tmp
-        useLoadstring = true
-    end
+function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomComments, step2, useUglifier, encryptConstants)
     if useLoadstring == nil then useLoadstring = true end
     level = level or 1
     mxLevel = mxLevel or 2
@@ -15,6 +10,7 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComment
     if randomComments == nil then randomComments = true end
     if step2 == nil then step2 = true end
     if useUglifier == nil then useUglifier = false end
+    if encryptConstants == nil then encryptConstants = false end
     
     local concat = function(...) return table.concat({...}, "") end
     local function dumpString(x) 
@@ -81,12 +77,21 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComment
         return "-- Failed to parse code: " .. ast .. "\r\n" .. code
     end
     
+    local CONSTANT_POOL_NAME
+    base = 'CONSTANT_POOl'
+    local chars = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuioplkjhgfdsazxcvbnm_1234567890"
+    while code:find(base, 1, true) do
+        local n = math.random(1, #chars)
+        base = base .. chars:sub(n, n)
+    end
+    CONSTANT_POOL_NAME = base
+    
     -- Rip constant strings out
     local function makeNode(index)
         return { 
             AstType = 'IndexExpr',
             ParentCount = 1,
-            Base = { AstType = 'VarExpr', Name = "CONSTANT_POOL" },
+            Base = { AstType = 'VarExpr', Name = CONSTANT_POOL_NAME },
             Index = { AstType = 'NumberExpr', Value = { Data = index } }
         } -- Ast Node
     end
@@ -96,7 +101,7 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComment
         Scope = ast.Scope,
         LocalList = { 
             --ast.Scope:CreateLocal('CONSTANT_POOL'),
-            { Scope = ast.Scope, Name = 'CONSTANT_POOL', CanRename = true },
+            { Scope = ast.Scope, Name = CONSTANT_POOL_NAME, CanRename = true },
         }, 
         InitList = { 
             { EntryList = { }, AstType = 'ConstructorExpr' },
@@ -120,8 +125,7 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComment
         if const == nil and nilIndex then return nilIndex end
         
         if type(const) == 'string' then
-            const = '"' .. dumpString(const) .. '"'
-            insertConstant({ Data = const }, index, 'StringExpr')
+            insertConstant({ Data = '"' .. dumpString(const) .. '"', Constant = const }, index, 'StringExpr')
             CONSTANT_POOL[const] = index
             index = index + 1
             return CONSTANT_POOL[const]
@@ -273,6 +277,38 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComment
     
     addConstant("\88\70\85\53\75\52\55\48\82\32\49\53\32\52\87\51\53\48\77\51\46\32\75\82\51\68\49\55\32\55\48\32\88\70\85\53\75\52\55\48\82\33", index)
     
+    if encryptConstants then
+        local bit = bit or bit32 or require'bit'
+        local xor = bit.bxor or bit.xor
+        local password = math.random(1, 100)
+        local _, node = ParseLua([[local decrypt = function(c)
+    local bit = bit or bit32 or require'bit'
+    return bit.bxor(]] .. tostring(password) .. [[, c)
+end
+]])
+        table.insert(ast.Body, 1, node.Body[1])
+        for k, v in pairs(constantPoolAstNode.EntryList) do
+            if v.Value then
+                if v.Value.AstType == 'StringExpr' then
+                    local str = v.Value.Value.Constant
+                    local t = { }
+                    for i = 1, str:len() do
+                        t[#t + 1] = xor(str:sub(i, i):byte(), password)
+                    end
+                    
+                    local newNode = "local _ = table.concat { "
+                    for k, v in pairs(t) do
+                        newNode = newNode .. "string.char(decrypt(" .. v .. ")), "
+                    end
+                    newNode = newNode .. " }"
+                    local _, node = ParseLua(newNode)
+                    if not _ then error(node) end
+                    constantPoolAstNode.EntryList[k].Value = node.Body[1].InitList[1]
+                end
+            end
+        end
+    end
+    
     local a = Format_Mini(ast)
     if useUglifier then
         local keywords = { "and", "break", "do", "else", "elseif",
@@ -330,13 +366,46 @@ function obfuscate(code, useLoadstring, level, mxLevel, makeFluff, randomComment
         return "-- Failed to parse code: " .. ast .. "\r\n" .. code
     end
     
-    a = Format_Mini(ast) -- Extra security (renames code from 'tmp' and CONSTANT_POOL)
+    a = Format_Mini(ast) -- Extra security (renames code from 'tmp' and CONSTANT_POOL, and constant encryption)
     
     if useLoadstring then
-        a = string.dump(loadstring(a))
+        a, b = loadstring(a)
+        if not a then
+            print("Error precompiling code: ", b)
+            return "-- Failed to precompile code: " .. b .. "\r\n" .. code
+        end
+        a = string.dump(a)
+        local file
+        
+        local function makeRandomName()
+            local id = ""
+            for i = 1, math.random(0, 20) do
+                id = id .. string.char(math.random(0, 255))
+            end
+            return id
+        end
+            
+        if a:sub(1, 5) == '\27LuaQ' then -- Renames locals to completely unrepresentable strings. MWAHAHA!!
+            file = LAT.Lua51.Disassemble(a)
+        elseif a:sub(1, 5) == '\27LuaR' then
+            file = LAT.Lua52.Disassemble(a)
+        end
+        
+        local function doFunc(f)
+            for i = 0, f.Locals.Count - 1 do
+                local lcl = f.Locals[i]
+                lcl.Name = "<local$" .. tostring(i) .. ">_" .. makeRandomName()
+            end
+        end
+        
+        if file then
+            doFunc(file.Main)
+            
+            a = file:Compile(false) -- Don't verify chunk
+        end
     end
     local a2 = a
-    if step2 then
+    if step2 == true then
         -- Convert to char/table/loadstring thing
         math.randomseed(os and os.time() or tick())
         local __X = math.random()
@@ -418,6 +487,7 @@ local options = {
     comments = false,
     step2 = true,
     uglify = false,
+    encryptConstants = false,
 }
 
 local outfn
@@ -436,7 +506,7 @@ if arg and arg[1] then
         print("Valid options:")
         print("  -nofluff        Doesn't generate pointless \"fluff\" code")
         print("  -fluff          Generates pointless \"fluff\" code")
-        print("  -loadstring     Precompiles code with loadstring")
+        print("  -loadstring     Precompiles code with loadstring, along with encrypting locals")
         print("  -noloadstring   Does not precompile code with loadstring")
         print("  -level <level>  Starts obfuscation at level <level>")
         print("  -max <max>      Sets max obfuscation level to <max>")
@@ -446,13 +516,15 @@ if arg and arg[1] then
         print("  -uglify         Converts words into chars >127 and then converts back")
         print("                      During execution. Recomended for large files, as it")
         print("                      can shrink code quite a bit. It also makes it unreadable")
+        print("  -encryptconsts      Turns off constant string encryption. Off by default, as ")
+        print("                      It causes MASSIVE bloating and it is just simple xor")
         print("  -h  -help       Shows this message")
         return
     end
     code = io.open(arg[1], 'rb'):read'*a'
     outfn = arg[1]:sub(1, -5) .. " [Obfuscated].lua"
     local i = 2
-    while i < #arg do
+    while i <= #arg do
     --for i = 2, #arg do
         local a = arg[i]:lower()
         if a == "-nofluff" then
@@ -475,6 +547,8 @@ if arg and arg[1] then
             options.step2 = false
         elseif a == "-uglify" then
             options.uglify = true
+        elseif a == "-encryptconsts" then
+            options.encryptConstants = true
         elseif a == "-h" or a == "-help" then
             
         end
@@ -486,7 +560,7 @@ else
 end
 
 local t1 = os and os.time() or tick()
-result = obfuscate(code, options.useLoadstring, options.level, options.mxLevel, options.fluff, options.comments, options.step2, options.uglify)
+result = obfuscate(code, options.level, options.mxLevel, options.loadstring, options.fluff, options.comments, options.step2, options.uglify, options.encryptConstants)
 local t2 = os and os.time() or tick()
 if not outfn then
     print(result)

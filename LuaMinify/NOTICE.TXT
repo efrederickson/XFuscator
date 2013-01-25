@@ -1,1 +1,2 @@
 This is only three files from my fork of LuaMinify, available at https://github.com/mlnlover11/LuaMinify
+It is incompatible with stravants LuaMinify
