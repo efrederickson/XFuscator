@@ -5,6 +5,9 @@ Disclaimer:
 Might not actually be the best one ever. 
 If you find a better one, tell me so I can make XFuscator better than it.
 
+NOTE: Files become much larger. A 1KB file can easily go to 5-15 KB.
+XFuscator (about 10 KB) becomes 500-700 KB. 
+
 
 Features:
 - Remove comments
@@ -21,11 +24,8 @@ Features:
 TODO:
 - Add ROBLOX features to make the game crash if the script was stolen
 - Tamper detection (SHA256 hash?)
-- extract global variables and replace with a CONSTANT_POOL index
-
-
-NOTE: Files become much larger. A 1KB file can easily go to 5-15 KB.
-XFuscator (about 10 KB) becomes 500-700 KB. 
+- extract global variables and replace with a CONSTANT_POOL index (no, because this would cause issues when one changed)
+- encode (binary, hex)
 
 Compare to:
 Capprime Lua Obfuscator (http://www.capprime.com/CapprimeLuaObfuscator/CapprimeLuaObfuscator.aspx)
@@ -36,3 +36,16 @@ Lua Obfuscator (http://www.lualearners.org/forum/3869)
 - Features: extract constant strings, add gibberish into comments, rename variables, DOES NOT WORK WITH COMMENTS
 Lua Code Obfuscator (http://pastebin.com/ixB0UpHB)
 - Features: precompiles into bytecode
+
+
+
+CHANGELOG
+------------------------------------
+Version 2.0b1
+- Complete rewrite, along with updated code parsing and using LAT to edit precompiled chunks
+
+Version 1.1
+- changed variable regex
+
+Version 1.0
+- Initial release
