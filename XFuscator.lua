@@ -1,4 +1,4 @@
-require'XFuscatorCore'
+require'XFuscator.init'
 
 print(('-'):rep(79))
 print("------------------ XFUSCATOR - THE BEST LUA OBFUSCATOR 3V4R ------------------")
@@ -101,7 +101,7 @@ else
 end
 
 local t1 = os and os.time() or tick()
-local result, msg = XFuscate(code, options.level, options.mxLevel, options.loadstring, options.fluff, options.comments, options.step2, options.uglify, options.encryptConstants)
+local result, msg = XFuscator.XFuscate(code, options.level, options.mxLevel, options.loadstring, options.fluff, options.comments, options.step2, options.uglify, options.encryptConstants)
 local t2 = os and os.time() or tick()
 if not outfn then
     print(result)
