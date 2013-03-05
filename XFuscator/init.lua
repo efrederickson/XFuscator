@@ -34,7 +34,7 @@ XFuscator.DumpString = function(x)
     end)
 end
 
-local function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomComments, step2, useUglifier, encryptConstants)
+local function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomComments, step2, useUglifier, encryptConstants, useTD)
     if useLoadstring == nil then useLoadstring = true end
     level = level or 1
     mxLevel = mxLevel or 2
@@ -43,6 +43,7 @@ local function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomC
     if step2 == nil then step2 = true end
     if useUglifier == nil then useUglifier = false end
     if encryptConstants == nil then encryptConstants = false end
+    if useTD == nil then useTD = true end
     
     local function GenerateFluff()
         if makeFluff then
@@ -75,7 +76,9 @@ local function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomC
         a = XFuscator.Uglify(a)
     end
     
-    a = XFuscator.TamperDetection(a)
+    --if useTD then
+    --    a = XFuscator.TamperDetection(a)
+    --end
     
     success, ast = ParseLua(a)
     if not success then
@@ -94,7 +97,7 @@ local function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomC
     if step2 == true then
         print("Step 2 ...")
         -- Convert to char/table/loadstring thing
-        a2 = XFuscator.Step2(a, GenerateFluff)
+        a2 = XFuscator.Step2(a, GenerateFluff, useTD)
     else
         a2 = "return loadstring('" .. dumpString(a) .. "')()"
     end

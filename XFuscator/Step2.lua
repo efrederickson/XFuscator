@@ -1,4 +1,4 @@
-return function(a, GenerateFluff)
+return function(a, GenerateFluff, useTD)
     GenerateFluff = GenerateFluff or function() return "" end
     local a2 = ""
     math.randomseed(os and os.time() or tick())
@@ -12,12 +12,21 @@ ____ = { function(...) local t = { ...} return ____[8](t) end, print, game, math
     math.randomseed(__X)
     local ___X = math.random(1, 1100)
     local a3 = { }
+    
+    if useTD then
+        -- TODO: SHA256 Hash checking
+    end
+    
     for i = 1, a:len() do
         table.insert(a3, table.concat{ "_(", (string.byte(a:sub(i, i)) * ___X), "), " })
     end
     a2 = a2 .. table.concat(a3, "")
     a2 = a2 .. " } \n"
     a2 = a2 .. GenerateFluff()
-    a2 = a2 .. "return ____[11]((____[8](__)), ____[#____])()\n"
+    if useTD then
+        a2 = a2 .. "return ____[11](assert(#(____[8](__))==" .. #a3 .. " and (____[8](__)) or nil, '" .. XFuscator.DumpString("Tampering detected") .. "'), ____[#____])()\n"
+    else
+        a2 = a2 .. "return ____[11]((____[8](__)), ____[#____])()\n"
+    end
     return a2
 end
