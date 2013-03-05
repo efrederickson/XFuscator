@@ -29,6 +29,7 @@ local options = {
     step2 = true,
     uglify = false,
     encryptConstants = false,
+    tamperDetection = true,
 }
 
 local outfn
@@ -59,6 +60,7 @@ if arg and arg[1] then
         print("                      can shrink code quite a bit. It also makes it unreadable")
         print("  -encryptconsts      Turns off constant string encryption. Off by default, as ")
         print("                      It causes MASSIVE bloating and it is just simple xor")
+        print("  -notd           Turns off using SHA256 hashing to check for tamper detection")
         print("  -h  -help       Shows this message")
         return
     end
@@ -90,6 +92,8 @@ if arg and arg[1] then
             options.uglify = true
         elseif a == "-encryptconsts" then
             options.encryptConstants = true
+        elseif a == "-notd" then
+            options.tamperDetection = false
         elseif a == "-h" or a == "-help" then
             
         end
@@ -101,7 +105,7 @@ else
 end
 
 local t1 = os and os.time() or tick()
-local result, msg = XFuscator.XFuscate(code, options.level, options.mxLevel, options.loadstring, options.fluff, options.comments, options.step2, options.uglify, options.encryptConstants)
+local result, msg = XFuscator.XFuscate(code, options.level, options.mxLevel, options.loadstring, options.fluff, options.comments, options.step2, options.uglify, options.encryptConstants, options.tamperDetection)
 local t2 = os and os.time() or tick()
 if not outfn then
     print(result)
@@ -113,7 +117,7 @@ else
     if a then
         print"-- Successful!"
         if not outfn then
-            a()
+            print("Output: ", a())
         end
     else
         print("-- Failed: " .. b)

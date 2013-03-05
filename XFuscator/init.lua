@@ -10,6 +10,8 @@ XFuscator.Precompile = require'XFuscator.Precompile'
 XFuscator.RandomComments = require'XFuscator.RandomComments'
 XFuscator.EncryptStrings = require'XFuscator.StringEncryptor'
 XFuscator.Step2 = require'XFuscator.Step2'
+XFuscator.TamperDetection = require'XFuscator.TamperDetection'
+
 XFuscator.DumpString = function(x) 
     --return concat("\"", x:gsub(".", function(d) return "\\" .. string.byte(d) end), "\"") 
     return x:gsub(".", function(d) 
@@ -73,10 +75,12 @@ local function obfuscate(code, level, mxLevel, useLoadstring, makeFluff, randomC
         a = XFuscator.Uglify(a)
     end
     
+    a = XFuscator.TamperDetection(a)
+    
     success, ast = ParseLua(a)
     if not success then
         -- If it got this far, and then fails, there is a problem with XFuscator
-        error("Failed to parse code: " .. ast)
+        error("Failed to parse code (internal XFuscator error, please report along with stack trace and problematic code): " .. ast)
     end
     
     a = Format_Mini(ast) -- Extra security (renames code from 'tmp' and CONSTANT_POOL, and constant encryption)

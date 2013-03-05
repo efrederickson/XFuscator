@@ -49,7 +49,8 @@ return function(code, ast)
         if const == nil and nilIndex then return nilIndex end
         
         if type(const) == 'string' then
-            insertConstant({ Data = '"' .. dumpString(const) .. '"', Constant = const }, index, 'StringExpr')
+            const = dumpString(const)
+            insertConstant({ Data = '"' .. const .. '"', Constant = const }, index, 'StringExpr')
             CONSTANT_POOL[const] = index
             index = index + 1
             return CONSTANT_POOL[const]

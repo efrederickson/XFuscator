@@ -11,7 +11,7 @@ XFuscator (about 10 KB) becomes 500-700 KB.
 
 Features:
 - Remove comments
-- Rename ALL local variables SAFELY
+- Rename ALL local variables SAFELY (see below, obfuscates precompiled local names also)
 - extract all constants
 - Remove extra whitespace
 - Add fluff
@@ -21,9 +21,9 @@ Features:
 - Add unrepresentable characters in comments
 - In precompiled code, renames locals to something like <local$1>_[0-20 chars of range 0-255]
 - option to encrypt constant strings (uses XOR with random key)
+- Tamper detection (SHA256 hash)
 TODO:
 - Add ROBLOX features to make the game crash if the script was stolen
-- Tamper detection (SHA256 hash?)
 - extract global variables and replace with a CONSTANT_POOL index (no, because this would cause issues when one changed)
 - encode (binary, hex)
 

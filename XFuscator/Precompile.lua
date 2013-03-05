@@ -23,7 +23,8 @@ return function(a)
     local function doFunc(f)
         for i = 0, f.Locals.Count - 1 do
             local lcl = f.Locals[i]
-            lcl.Name = "<local$" .. tostring(i) .. ">_" .. makeRandomName()
+            -- gives it away ;)
+            --lcl.Name = "<local$" .. tostring(i) .. ">_" .. makeRandomName()
             lcl.Name = tostring(i) .. makeRandomName()
         end
     end
