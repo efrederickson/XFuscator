@@ -38,6 +38,34 @@ Lua Obfuscator (http://www.lualearners.org/forum/3869)
 Lua Code Obfuscator (http://pastebin.com/ixB0UpHB)
 - Features: precompiles into bytecode
 
+Usage
+- install lua 5.2
+
+Usage: XFuscator.lua <script.lua> [options]
+  Obfuscates script.lua and writes the obfuscated code to <script [Obfuscated].lua>
+
+Other usage: XFuscator.lua
+  Obfuscates one line of code read from stdin (console)
+
+Valid options:
+  -nofluff        Doesn't generate pointless "fluff" code
+  -fluff          Generates pointless "fluff" code
+  -loadstring     Precompiles code with loadstring, along with encrypting locals
+  -noloadstring   Does not precompile code with loadstring
+  -level <level>  Starts obfuscation at level <level>
+  -max <max>      Sets max obfuscation level to <max>
+  -nocomments     Does not generate pointless comments with random chars
+  -nostep2        Does not turn code into slightly encrypted char array 
+                      along with other stuff. This setting is recommeded.
+  -uglify         Converts words into chars >127 and then converts back
+                      During execution. Recomended for large files, as it
+                      can shrink code quite a bit. It also makes it unreadable
+  -encryptconsts      Turns off constant string encryption. Off by default, as 
+                      It causes MASSIVE bloating and it is just simple xor
+  -notd           Turns off using SHA256 hashing to check for tamper detection
+  -h  -help       Shows this message
+
+
 
 
 CHANGELOG
