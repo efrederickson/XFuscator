@@ -28,6 +28,10 @@ TODO:
 - extract global variables and replace with a CONSTANT_POOL index (no, because this would cause issues when one changed)
 - encode (binary, hex)
 
+Usage:
+- install lua5.2
+lua5.2 XFuscator.lua "%1" -uglify -level 1 -max "%2"
+
 Compare to:
 Capprime Lua Obfuscator (http://www.capprime.com/CapprimeLuaObfuscator/CapprimeLuaObfuscator.aspx)
 - Features: rename variables longer than 4 characters, strip SOME comments and eliminate SOME whitespace
